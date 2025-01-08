@@ -111,7 +111,7 @@ foreach ($pkg in $packages) {
 
 Write-Host "`nConfiguring Git aliases..."
 if (Test-CommandExists "git") {
-    git config --global alias.g "git" 
+    Set-Alias g git
     git config --global alias.cb "rev-parse --abbrev-ref HEAD"
     git config --global alias.b "branch"
     git config --global alias.a "add"
@@ -120,6 +120,7 @@ if (Test-CommandExists "git") {
     git config --global alias.f "fetch"
     git config --global alias.l "log"
     git config --global alias.co "checkout"
+    git config --global alias.s "status"
 }
 else {
     Write-Warning "Git not found! Aliases not configured."
