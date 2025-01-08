@@ -51,6 +51,8 @@ $config = Load-PrivateConfig -FilePath $ConfigFilePath
 if ($config) {
     $GitUserName  = $config.GitUserName
     $GitUserEmail = $config.GitUserEmail
+    $DefaultClonePath = $config.DefaultClonePath
+    $ReposListPath    = $config.ReposListPath
 }
 
 
@@ -313,17 +315,14 @@ For personal machines, often it's easier to install them manually from the store
 #    (default location: c:\repos)
 #------------------------------------------------
 
-$DefaultClonePath = "C:\repos"
-$ReposListPath    = ".\repos.txt"
-
 function Clone-Repositories {
     param(
         [string]$RepoListFile = $ReposListPath,
-        [string]$CloneFolder = $DefaultClonePath
+        [string]$CloneFolder  = $DefaultClonePath
     )
 
     if (!(Test-Path $RepoListFile)) {
-        Write-Host "No repos.txt file found at $RepoListFile. Skipping clone."
+        Write-Host "No repos file found at $RepoListFile. Skipping clone."
         return
     }
 
@@ -335,11 +334,11 @@ function Clone-Repositories {
     $repos = Get-Content $RepoListFile | Where-Object { $_ -and $_.Trim() -ne "" }
     foreach ($repo in $repos) {
         Write-Host "Cloning $repo ..."
+        # Join-Path ensures correct path separators
         git clone $repo (Join-Path $CloneFolder (Split-Path $repo -LeafBase))
     }
 }
 
-# Uncomment the following line if you want to automatically clone the repositories
-# Clone-Repositories
+Clone-Repositories
 
-Write-Host "`nDevelopment environment setup is complete (with caveats for the steps requiring manual input)!"
+Write-Host "`nDevelopment environment setup is complete!"

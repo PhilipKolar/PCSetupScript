@@ -9,6 +9,8 @@ The script requires a configuration file called `config.psd1`. This is a sample 
 @{
     GitUserName  = "Your Name"
     GitUserEmail = "Your@Email.com"
+    DefaultClonePath   = "C:\repos"
+    ReposListPath      = ".\repos.txt"
 }
 ```
 
