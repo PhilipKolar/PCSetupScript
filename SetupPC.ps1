@@ -90,7 +90,6 @@ $packages = @(
     @{ name = "Visual Studio Professional";     chocoName = "visualstudio2022professional";    checkCmd = "devenv" },
     @{ name = "Firefox";                        chocoName = "firefox";                         checkCmd = "firefox" },
     @{ name = "Chrome";                         chocoName = "googlechrome";                    checkCmd = "chrome" },
-    #@{ name = "Cursor";                         chocoName = "cursor";                          checkCmd = "cursor" }, # Might not exist in Chocolatey
     @{ name = "Spotify";                        chocoName = "spotify";                         checkCmd = "spotify" },
     @{ name = "VS Code";                        chocoName = "vscode";                          checkCmd = "code" },
     @{ name = "7Zip";                           chocoName = "7zip";                            checkCmd = "7z" },
@@ -128,6 +127,35 @@ foreach ($pkg in $packages) {
         choco install $chocoName -y
     }
 }
+
+function Install-Cursor {
+    Write-Host "`n=== Installing Cursor (semi-automated) ==="
+
+    $cursorExe = "C:\Program Files\Cursor\Cursor.exe"
+    if (Test-Path $cursorExe) {
+        Write-Host "Cursor is already installed at $cursorExe"
+        return
+    }
+
+    $downloadUrl = "https://download.cursor.com/CursorSetup.exe" # Example only—update with real URL
+    $setupFile   = "$env:TEMP\CursorSetup.exe"
+
+    Write-Host "Downloading Cursor installer from $downloadUrl"
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $setupFile
+
+    Write-Host "Running installer in silent mode..."
+    Start-Process $setupFile -ArgumentList "/S" -Wait
+
+    # Verify install
+    if (Test-Path $cursorExe) {
+        Write-Host "Cursor installed successfully!"
+    }
+    else {
+        Write-Warning "Cursor installation might have failed or the path is different."
+    }
+}
+
+Install-Cursor
 
 #------------------------------------------------
 # 3) Configure Git aliases
