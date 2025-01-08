@@ -31,6 +31,29 @@ if (-not (net session 2>$null)) {
 # Ensure TLS 1.2 for web requests
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+$ConfigFilePath = ".\config.psd1"
+
+function Load-PrivateConfig {
+    param(
+        [string]$FilePath
+    )
+    
+    if (Test-Path $FilePath) {
+        Write-Host "Loading private config from $FilePath..."
+        return Import-PowerShellDataFile -Path $FilePath
+    } else {
+        Write-Warning "No config file found at $FilePath. Proceeding without it."
+        return $null
+    }
+}
+
+$config = Load-PrivateConfig -FilePath $ConfigFilePath
+if ($config) {
+    $GitUserName  = $config.GitUserName
+    $GitUserEmail = $config.GitUserEmail
+}
+
+
 #------------------------------------------------
 # 1) Install Chocolatey if not present
 #------------------------------------------------
@@ -64,10 +87,11 @@ Install-Chocolatey
 $packages = @(
     @{ name = "Git";                            chocoName = "git";                             checkCmd = "git" },
     @{ name = "LINQPad";                        chocoName = "linqpad";                         checkCmd = "linqpad" },
-    @{ name = "Visual Studio Professional";     chocoName = "visualstudio2022professional";     checkCmd = "devenv" },
+    @{ name = "Visual Studio Professional";     chocoName = "visualstudio2022professional";    checkCmd = "devenv" },
     @{ name = "Firefox";                        chocoName = "firefox";                         checkCmd = "firefox" },
     @{ name = "Chrome";                         chocoName = "googlechrome";                    checkCmd = "chrome" },
-    @{ name = "Cursor";                         chocoName = "cursor";                          checkCmd = "cursor" }, # Might not exist in Chocolatey
+    #@{ name = "Cursor";                         chocoName = "cursor";                          checkCmd = "cursor" }, # Might not exist in Chocolatey
+    @{ name = "Spotify";                        chocoName = "spotify";                         checkCmd = "spotify" },
     @{ name = "VS Code";                        chocoName = "vscode";                          checkCmd = "code" },
     @{ name = "7Zip";                           chocoName = "7zip";                            checkCmd = "7z" },
     @{ name = "Google Drive";                   chocoName = "googledrive";                     checkCmd = "googledrive" },
@@ -79,7 +103,7 @@ $packages = @(
     @{ name = "ChatGPT Desktop App";            chocoName = "chatgpt";                         checkCmd = "chatgpt" },
     @{ name = "IIS";                            chocoName = "iis";                             checkCmd = "InetMgr" },
     @{ name = "SQL Server Developer";           chocoName = "sql-server-developer";            checkCmd = "sqlservr" },
-    @{ name = "SQL Server Management Studio";   chocoName = "sql-server-management-studio";     checkCmd = "ssms" },
+    @{ name = "SQL Server Management Studio";   chocoName = "sql-server-management-studio";    checkCmd = "ssms" },
     @{ name = "Docker Desktop";                 chocoName = "docker-desktop";                  checkCmd = "docker" },
     @{ name = "Node.js (with npm)";            chocoName = "nodejs-lts";                       checkCmd = "npm" }
 )
@@ -111,6 +135,15 @@ foreach ($pkg in $packages) {
 
 Write-Host "`nConfiguring Git aliases..."
 if (Test-CommandExists "git") {
+    Write-Host "Git is installed. Setting name/email..."
+    if ($GitUserName -and $GitUserEmail) {
+        Write-Host "Configuring git user.name and user.email..."
+        git config --global user.name  $GitUserName
+        git config --global user.email $GitUserEmail
+    } else {
+        Write-Warning "Git username/email not set. Please provide them in config.psd1."
+    }
+
     Set-Alias g git
     git config --global alias.cb "rev-parse --abbrev-ref HEAD"
     git config --global alias.b "branch"
@@ -121,6 +154,7 @@ if (Test-CommandExists "git") {
     git config --global alias.l "log"
     git config --global alias.co "checkout"
     git config --global alias.s "status"
+    git config --global alias.d "diff"
 }
 else {
     Write-Warning "Git not found! Aliases not configured."
